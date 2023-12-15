@@ -1081,7 +1081,8 @@ void tftreset(){
   
   //so ziemlich egal, was ich mit dem display mache es färbt sich weiß und dann optisch nichts mehr, es reagiert aber auf berührungen
 
-  // tft.reset();
+  tft.reset();
+  tft.begin(0x9341);
 
 
   //  uint16_t identifier = tft.readID();
@@ -1176,9 +1177,14 @@ void menu(){
         switch(b){
           case 0:
           Serial.println("switch(b), case 0 eingetroffen");
+          Serial.println("tftreset wird in 5 sekunden aufgerufen");
+          delay(5000);
 
             //Das problem liegt irgendwo in der tftreset() methode
-            tftreset();
+            // tftreset();
+            // tft.drawCircle(120, 170, 10, BLUE);
+            // tft.fillCircle(120, 170, 10, BLUE);
+          
             delay(500);
             
             Serial.println(tft.width());
@@ -1187,7 +1193,7 @@ void menu(){
 
             imMenue = false;
 
-            fernbedienung();
+            // fernbedienung();
             break;
           case 1:
             tftreset();
