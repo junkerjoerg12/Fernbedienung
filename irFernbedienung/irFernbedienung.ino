@@ -165,7 +165,7 @@ String textfield = "";
 
 
 
-Elegoo_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+//Elegoo_TFTLCD tft;//(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
 
@@ -220,23 +220,7 @@ void setup(void) {
 
   Serial.println("Starte neu, aufgrund des seriellen Monitores");
 
-  tft.reset();
-
-  uint16_t identifier = tft.readID();
-  Serial.println("identifier:");
-  Serial.println(identifier);
-  if(identifier==0x0101){     
-      identifier=0x9341;
-  }else{
-    identifier=0x9341;
-  }
-  Serial.println(identifier);
-  
-
-  tft.begin(identifier);
-  tft.setRotation(2);
-  tft.fillScreen(GREEN);
-  delay(400);
+  Elegoo_TFTLCD tft = initScreen();
 
 
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
@@ -283,6 +267,7 @@ void setup(void) {
 }
 
 void drawbuttons(){
+  Elegoo_TFTLCD tft = initScreen();
                                                                                                     //buttons erstellen
       
       for (uint8_t col=0; col<2; col++) {                                                           //1.reihe
@@ -308,6 +293,7 @@ void drawbuttons(){
 
                                                                                                   //statusbar ausgabe
 void status(const __FlashStringHelper *msg) {
+    Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
   tft.setTextColor(ILI9341_WHITE);
@@ -316,6 +302,7 @@ void status(const __FlashStringHelper *msg) {
 }
 
 void status(char *msg) {
+  Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
   tft.setTextColor(ILI9341_WHITE);
@@ -419,6 +406,7 @@ void websiteauslesen(){
 void loop(){}
 
 void fernbedienung(void) {
+  Elegoo_TFTLCD tft = initScreen();
   Serial.println("in Methode fernbedienung");
   tft.fillScreen(YELLOW);
 while(true){
@@ -1076,60 +1064,9 @@ schleifebeenden = false;
             }
 }
 
-void tftreset(){
-  Serial.println("JAAA");
-  
-  //so ziemlich egal, was ich mit dem display mache es färbt sich weiß und dann optisch nichts mehr, es reagiert aber auf berührungen
-
-  tft.reset();
-  tft.begin(0x9341);
-
-
-  //  uint16_t identifier = tft.readID();
-  //  Serial.println("identifier: ");
-  //  Serial.println(identifier);
-
-  // if(identifier==0x0101){     
-  //   identifier=0x9341;
-  // }else{
-  //   identifier=0x9341;
-  // }
-  // Serial.println(identifier);
-  
-
-  // tft.begin(identifier);
-  // tft.setRotation(2);
-  // tft.fillScreen(GREEN);
-  // delay(400);
-
-  //das hier unten geht schon mal nicht!!
-  // for(int i = 0; i < 6; i++){
-    
-  //   buttonMenu[i].drawButton(false);
-  //   Serial.println("Erst false, dann true");
-  //   buttonMenu[i].drawButton(true);
-  // }
-  
-
-// tft.fillScreen(BLACK);
-// Serial.println("nach fillSchreen");
-  // for(int x = 0; x < 240; x++){
-  //   for(int y = 0; y < 320; y++){
-  //     Serial.println("in der Verschachtelten for schleife");
-  //     delay(10);
-  //     tft.drawPixel(x, y, BLUE);
-  //   }
-  // }
-  //   for(int i = 0; i < 6; i++){
-  //   buttonMenu[i].drawButton(false);
-  //   Serial.println("Erst false, dann true");
-  //   buttonMenu[i].drawButton(true);
-  // }
-  // Serial.println("nach for schleife");
-}
-
 
 void menu(){
+  Elegoo_TFTLCD tft = initScreen();
   boolean imMenue = true;
   Serial.println("In Funktion \"menu\"");
   tft.fillScreen(RED);
@@ -1177,14 +1114,6 @@ void menu(){
         switch(b){
           case 0:
           Serial.println("switch(b), case 0 eingetroffen");
-          Serial.println("tftreset wird in 5 sekunden aufgerufen");
-          delay(5000);
-
-            //Das problem liegt irgendwo in der tftreset() methode
-            // tftreset();
-            // tft.drawCircle(120, 170, 10, BLUE);
-            // tft.fillCircle(120, 170, 10, BLUE);
-          
             delay(500);
             
             Serial.println(tft.width());
@@ -1193,26 +1122,33 @@ void menu(){
 
             imMenue = false;
 
-            // fernbedienung();
+            fernbedienung();
             break;
           case 1:
-            tftreset();
+
+          //irgendwie wird dashier auch ausgeführt aber nur manchmal
+          Serial.println("Das wäre jetzt komisch, weil fall 1 auch eingetreten ist");
+
+          // Das könnte ggf. wieder rein, wenn die Methode funnktioniert
+            // tftreset();
             displaySperre = true;
             break;
           case 2:
+                    Serial.println("Das wäre jetzt komisch, weil fall 2 auch eingetreten ist");
             
             break;
           case 3:
+                    Serial.println("Das wäre jetzt komisch, weil fall 3 auch eingetreten ist");
             
             break;
           case 4:
-            
+                      Serial.println("Das wäre jetzt komisch, weil fall 4 auch eingetreten ist");
             break;
           case 5:
-            
+                      Serial.println("Das wäre jetzt komisch, weil fall 5 auch eingetreten ist");
             break;
           case 6:
-            
+                      Serial.println("Das wäre jetzt komisch, weil fall 6 auch eingetreten ist");
             break;
         }
       }
@@ -1227,4 +1163,19 @@ void menu(){
   }
   delay(100);
   Serial.println("Stopp");
+}
+
+//Methode zum initialisiren des Bildschirms, muss in jeder Methode aufgerufen werden, 
+//in der der Bildschirm gnutzt wird.
+//gibt eine Instanz vom Bildschirm zurück
+Elegoo_TFTLCD initScreen(){
+  const uint16_t identifier=0x9341;
+
+  Elegoo_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+
+  tft.reset();
+  tft.begin(identifier);
+  tft.setRotation(2);
+
+  return tft;
 }
