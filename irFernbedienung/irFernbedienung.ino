@@ -6,7 +6,6 @@
 #include <IRremote.hpp>
 #include <SPI.h>
 #include <SD.h>
-
 #include <RCSwitch.h>
 
 #define BUFFPIXEL 150
@@ -86,6 +85,8 @@ void zuordnen(storedIRDataStruct *aIRDataToSend);
 
 #define LCD_RESET A4
 
+
+//Farben
 #define	BLACK   0x0000
 #define	BLUE    0x001F
 #define	RED     0xF800
@@ -94,7 +95,6 @@ void zuordnen(storedIRDataStruct *aIRDataToSend);
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
-
 
 #define ILI9341_BLACK       0x0000      /*   0,   0,   0 */
 #define ILI9341_NAVY        0x000F      /*   0,   0, 128 */
@@ -128,7 +128,8 @@ void zuordnen(storedIRDataStruct *aIRDataToSend);
 
 #define textsizeMenu 3
 
-#define BUTTON_X1 65           //buttons reihe 1
+//buttons reihe 1
+#define BUTTON_X1 65           
 #define BUTTON_Y1 100
 #define BUTTON_W1 108
 #define BUTTON_H1 30
@@ -163,12 +164,16 @@ String textfield = "";
 #define STATUS_X 10
 #define STATUS_Y 65
 
+//Werte für den Druck, der auf das Display ausgeübt wird
+#define MINPRESSURE 100                           //10
+#define MAXPRESSURE 1000                          //1000
+
 
 
 //Elegoo_TFTLCD tft;//(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
-
+//Bezeichnung der Knöpfe zum Funtionen auswählen
 String fernbedienungen[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
 int decodertypnummer = 0;
@@ -220,9 +225,12 @@ void setup(void) {
 
   Serial.println("Starte neu, aufgrund des seriellen Monitores");
 
+  //Der Bildschirm wird instanziiert
   Elegoo_TFTLCD tft = initScreen();
 
 
+
+//irgendwas mit IR 
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(2000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
@@ -267,6 +275,7 @@ void setup(void) {
 }
 
 void drawbuttons(){
+  //Bildschirm wird instanziiert
   Elegoo_TFTLCD tft = initScreen();
                                                                                                     //buttons erstellen
       
@@ -311,8 +320,7 @@ void status(char *msg) {
   
 }
 
-#define MINPRESSURE 100                           //10
-#define MAXPRESSURE 1000                          //1000
+
 
 
 void buttonsauslesen(){
@@ -403,7 +411,7 @@ void websiteauslesen(){
   Serial.println(" ");
 }
 
-void loop(){}
+
 
 void fernbedienung(void) {
   Elegoo_TFTLCD tft = initScreen();
@@ -1066,19 +1074,23 @@ schleifebeenden = false;
 
 
 void menu(){
-  Elegoo_TFTLCD tft = initScreen();
-  boolean imMenue = true;
-  Serial.println("In Funktion \"menu\"");
-  tft.fillScreen(RED);
-  delay(600);
+  
+  Elegoo_TFTLCD tft = initScreen();       //Bildschirm wird instanziiert
+
+  boolean imMenue = true;       //wird false, sobald aus dem Menue ausgestiegen ist
   bool displaySperre = false;
   int zusatzabstand = 0;
+
+  tft.fillScreen(RED);
+
+  //definiert die Knöpfe 
   for(int i = 0; i < 6; i++){
     buttonMenu[i].initButton(&tft, 121, ((i * 40) + 40 + zusatzabstand + 40), 231, 35, ILI9341_WHITE, ILI9341_YELLOW, ILI9341_RED, buttonMenuLables[i], textsizeMenu);
     //buttonMenu[i].initButton(&tft, 121, ((i * 40) + 40 + zusatzabstand + 40), 240, 35, ILI9341_WHITE, ILI9341_YELLOW, ILI9341_RED, buttonMenuLables[i], textsizeMenu);
-    buttonMenu[i].drawButton();
+    buttonMenu[i].drawButton();       //Zeichent die Knöpfe auf dem Bildschirm
     
   }
+
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
@@ -1111,44 +1123,35 @@ void menu(){
           delay(10000);
           menu();
         }
+
+        //Was bei welchem Knopf ausgeführt werden soll
         switch(b){
-          case 0:
-          Serial.println("switch(b), case 0 eingetroffen");
-            delay(500);
+          case 0:                                               //ins andere("Fernbedienung") Menue
+            imMenue = false;
             
             Serial.println(tft.width());
             Serial.println(tft.height());
-            delay(600);
-
-            imMenue = false;
 
             fernbedienung();
             break;
           case 1:
 
-          //irgendwie wird dashier auch ausgeführt aber nur manchmal
-          Serial.println("Das wäre jetzt komisch, weil fall 1 auch eingetreten ist");
-
-          // Das könnte ggf. wieder rein, wenn die Methode funnktioniert
-            // tftreset();
             displaySperre = true;
             break;
           case 2:
-                    Serial.println("Das wäre jetzt komisch, weil fall 2 auch eingetreten ist");
             
             break;
           case 3:
-                    Serial.println("Das wäre jetzt komisch, weil fall 3 auch eingetreten ist");
             
             break;
           case 4:
-                      Serial.println("Das wäre jetzt komisch, weil fall 4 auch eingetreten ist");
+
             break;
           case 5:
-                      Serial.println("Das wäre jetzt komisch, weil fall 5 auch eingetreten ist");
+
             break;
           case 6:
-                      Serial.println("Das wäre jetzt komisch, weil fall 6 auch eingetreten ist");
+
             break;
         }
       }
@@ -1179,3 +1182,7 @@ Elegoo_TFTLCD initScreen(){
 
   return tft;
 }
+
+
+//wird nicht gebraucht
+void loop(){}
