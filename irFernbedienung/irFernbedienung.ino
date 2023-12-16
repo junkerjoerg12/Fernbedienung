@@ -186,10 +186,10 @@ bool remoteweiter;
 int welcherbutton = 0;
 int welcherbuttonalt = 0;
 char bluetoothwert = 0;
-int btalsint = 25;
+int btAlsInt = 25;
 int anzahlbilder = 0;
 int value = 0;
-bool einmalbuttonsmalen = true;
+
 
 Elegoo_GFX_Button buttons[15];
 Elegoo_GFX_Button buttonMenu[6];
@@ -412,21 +412,22 @@ void websiteauslesen(){
 }
 
 
-
+//nach dem ausführen verschwinden alle knöpfe, außer der zuletzt gedrückte!!
 void fernbedienung(void) {
   Elegoo_TFTLCD tft = initScreen();
+  bool einmalbuttonsmalen = true;
   Serial.println("in Methode fernbedienung");
   tft.fillScreen(YELLOW);
-while(true){
+  while(true){
 
-  if(Serial1.available() > 0){
-    int q = Serial1.read();
-    if(q > 2 & q < 20){
-      Serial.print("Esp-Knopf: ");
-      Serial.println(q);
-      btalsint = q;
+    if(Serial1.available() > 0){
+      int q = Serial1.read();
+      if(q > 2 & q < 20){
+        Serial.print("Esp-Knopf: ");
+        Serial.println(q);
+        btAlsInt = q;
+      }
     }
-  }
   
 
 
@@ -434,7 +435,7 @@ while(true){
   if(Serial1.available() > 0){
     bluetoothwert = Serial1.read();
     if(bluetoothwert != '30'){
-      btalsint = ((int) bluetoothwert) - 46;
+      btAlsInt = ((int) bluetoothwert) - 46;
       bluetoothwert = '21';
     }
   }
@@ -448,21 +449,19 @@ while(true){
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
-  if(einmalbuttonsmalen == true){
+  if(einmalbuttonsmalen){       //malt die Knöpfe einmal, sobalt die Methode aufgerufen wurde
     einmalbuttonsmalen = false;
     drawbuttons();
   }
 
-   if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
-  
+   if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {        //speicehert die Koordinaten einer Berührung mit dem display
     p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
     p.y = (tft.height()-map(p.y, TS_MINY, TS_MAXY, tft.height(), 0));
    }
    
  
-  for (uint8_t b=0; b<15; b++) {
+  for (uint8_t b=0; b<15; b++) {            //setzt pressen des breührten buttons auf true und alle anderen auf false
     if (buttons[b].contains(p.x, p.y)) {
-      
       buttons[b].press(true);  
     } else {
       buttons[b].press(false);
@@ -472,24 +471,23 @@ while(true){
   
   for (uint8_t b=0; b<15; b++) {
     if (buttons[b].justReleased()) {
-    
       buttons[b].drawButton();
     }
     
-    if (buttons[b].justPressed() | (btalsint > 2 & btalsint < 20)) {
+    if (buttons[b].justPressed() || (btAlsInt > 2 & btAlsInt < 20)) {
         buttons[b].drawButton(true);  
         
-        Serial.println(btalsint);
+        Serial.println(btAlsInt);
 
-        if((b > 2 & b < 15) | (btalsint > 2 & btalsint < 19)){
-          if(btalsint > 2 & btalsint < 15){
-            b = btalsint;
+        if((b > 2 & b < 15) || (btAlsInt > 2 & btAlsInt < 19)){
+          if(btAlsInt > 2 & btAlsInt < 15){
+            b = btAlsInt;
           }
           textfield = fernbedienungen[b - 3];
           welcherbutton = b - 1;
           welcherbuttonalt = welcherbutton;
           adresse = 0;
-          if(btalsint > 2 & btalsint < 15){
+          if(btAlsInt > 2 & btAlsInt < 15){
             b = 0;
           }
         }else{
@@ -546,13 +544,13 @@ while(true){
           bestaetigung++;
           break;
           
-          }
-          if(bestaetigung == 1){
+        }
+        if(bestaetigung == 1){
           status(F("Noch 1 mal druecken"));
           bestaetigung++;
           break;          
-          }
-          if(bestaetigung == 2){
+        }
+        if(bestaetigung == 2){
             status(F(" "));
             status(F("Scanne..."));
             bestaetigung = 0;
@@ -601,7 +599,7 @@ while(true){
 
             sdschreiben(&sStoredIRData);
 
-          }
+        }
           delay(200);
           
         }else{
@@ -629,7 +627,7 @@ while(true){
         delay(100);                                                           //wichtig
         }
     }
-    btalsint = 20;
+    btAlsInt = 20;
   }
 }
 }
@@ -1100,25 +1098,27 @@ void menu(){
     TSPoint p = ts.getPoint();
     digitalWrite(13, LOW);          //was genau macht das?
 
-    //Sollte überprüfen, ob das Display berührt wurde und die Koordinaten unter p.x und p.y speichern scheint irgendwie in unregelmäßigen abständen true z
+    //Überprüft, ob das Display berührt wurde und speichert die Koordinaten der Berührung unter p.x und p.y 
     if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
         p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
         p.y = (tft.height()-map(p.y, TS_MINY, TS_MAXY, tft.height(), 0));
       }
 
+    //Die nächsten zwei fors könnten zu einer gemacht wedrden 
     for (uint8_t b=0; b<6; b++) {
-      if (buttonMenu[b].contains(p.x, p.y)) {
+      if (buttonMenu[b].contains(p.x, p.y)) {   //Überprüft, die Berührung auf einem der knöfpe passiert ist
         buttonMenu[b].press(true);  
       }else{
         buttonMenu[b].press(false);
       }
+
     }
     for(int b = 0; b < 6; b++){
-      if(buttonMenu[b].justPressed()){
+      if(buttonMenu[b].isPressed()){      //wenn ein knopf gedrückt wurde, wird der entscprechende Code ausgeführt
         Serial.print("Button: ");
         buttonMenu[b].press(false);
         Serial.println(b);
-        if(displaySperre == true){
+        if(displaySperre == true){      //KA warum oder wofür
           displaySperre = false;
           delay(10000);
           menu();
