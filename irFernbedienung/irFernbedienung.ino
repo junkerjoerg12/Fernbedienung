@@ -259,7 +259,7 @@ void setup(void) {
 
 
   delay(100);
-  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);                //wurde eigentlich schon mal
   printActiveIRProtocols(&Serial);
 
 
@@ -268,7 +268,7 @@ void setup(void) {
   delay(100);
   namenauslesen();
   delay(100);
-  //Hier wieder reinmachen, sonst wird gar nichts mehr gehen
+  //Hier wieder reinmachen, sonst wird gar nichts mehr gehen!!!
   //websiteauslesen();
   delay(100);
   menu();
@@ -300,9 +300,12 @@ void drawbuttons(){
 
 }
 
+
+//Wo ist der Unterschied zwischen denMethoden?
                                                                                                   //statusbar ausgabe
 void status(const __FlashStringHelper *msg) {
-    Elegoo_TFTLCD tft = initScreen();
+  Serial.println("FlachStringHelper methode");
+  Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
   tft.setTextColor(ILI9341_WHITE);
@@ -310,7 +313,10 @@ void status(const __FlashStringHelper *msg) {
   tft.print(msg);
 }
 
+
+//diehier wird scheinbar nicht genutzt
 void status(char *msg) {
+  Serial.println("char methode");
   Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
@@ -419,9 +425,12 @@ void fernbedienung(void) {
   Serial.println("in Methode fernbedienung");
   tft.fillScreen(YELLOW);
   while(true){
+    // Serial.println("äußere while schleife ausgeführt");     //Funktioniert einwandfrei auf bei senden und scannen knopf
 
-    if(Serial1.available() > 0){
+
+    if(Serial1.available() > 0){                      //Bytes im Serial read buffer
       int q = Serial1.read();
+      Serial.println(q);
       if(q > 2 & q < 20){
         Serial.print("Esp-Knopf: ");
         Serial.println(q);
@@ -441,7 +450,7 @@ void fernbedienung(void) {
   }
 */
 
-  digitalWrite(13, HIGH);
+  digitalWrite(13, HIGH);           
   TSPoint p = ts.getPoint();
   digitalWrite(13, LOW);
           
@@ -473,41 +482,66 @@ void fernbedienung(void) {
     if (buttons[b].justReleased()) {
       buttons[b].drawButton();
     }
-    
-    if (buttons[b].justPressed() || (btAlsInt > 2 & btAlsInt < 20)) {
-        buttons[b].drawButton(true);  
+
+    //oder shcient irreleveant, da btAlsIns immer == 20 ist!!
+    if (buttons[b].justPressed() || (btAlsInt > 2 & btAlsInt < 20)) {         //prüft, ob und welcher knopf gedrückt wurde
+      Serial.println("In if Block");
+        buttons[b].drawButton(true);                                          //Invertiert die Farben des Knopfes zum Erkennen
         
+        Serial.print("btAlsInt: ");
         Serial.println(btAlsInt);
 
-        if((b > 2 & b < 15) || (btAlsInt > 2 & btAlsInt < 19)){
-          if(btAlsInt > 2 & btAlsInt < 15){
+        if((b > 2 & b < 15) || (btAlsInt > 2 & btAlsInt < 19)){               //Überprüft, ob der gedrückte Knopf ein Zahlenknopf ist
+
+          //Kann eigenmtlich nicht eintreffen, da btAlsInt immer == 20 ist
+          if(btAlsInt > 2 && btAlsInt < 15){
             b = btAlsInt;
           }
+
+        /*
+          Serial.print("b: ");
+          Serial.println(b);
+          Serial.print("b- 3: ");
+          Serial.println(b-3);
+          */
+
+
           textfield = fernbedienungen[b - 3];
           welcherbutton = b - 1;
           welcherbuttonalt = welcherbutton;
-          adresse = 0;
+          adresse = 0;  
+
+          //kann wieder nicht eintrefen
           if(btAlsInt > 2 & btAlsInt < 15){
             b = 0;
           }
-        }else{
+        }else{                                                            //Senden oder Scannen wurde gedrückt
+
+
+        //Hier muss was rein, damit die Knöpfe nicht verschwinden
+
+
           //textfield = " ";
         }
 
+        Serial.println("hallo");
+        Serial.println(F("hallo"));
 
 
-        if(b == 8){
+
+
+
+        if(b == 8){                                                     //wenn knopf mit text "6" gedrückt
+          Serial.println("richtiger knopf");
           if(bestaetigung1 == 0){
             status(F("Noch 2 mal druecken zum Loeschen"));
             bestaetigung1++;
             break;
-          }
-          if(bestaetigung1 == 1){
+          }else if(bestaetigung1 == 1){
             status(F("Noch 1 mal druecken zum Loeschen"));
             bestaetigung1++;
             break;          
-          }
-          if(bestaetigung1 == 2){
+          }else if(bestaetigung1 == 2){
             status(F(" "));
             status(F("Dateien geloescht"));
             bestaetigung1 = 0;
@@ -519,12 +553,14 @@ void fernbedienung(void) {
             for(int b = 0; b < 12; b++){
               SD.remove((fernbedienungen[b] + ".txt"));
             }
-            menu();
+            menu();                                                   //Zurück ins Hauptmenue
           }
         }else{
           bestaetigung1 = 0;
         }
-        
+
+
+        Serial.print("textfeld:");                                //printet den Inhalt des Buttons auf dem Display in eine Zeile
         Serial.println(textfield);
         tft.setCursor(TEXT_X + 2, TEXT_Y+10);
         tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
@@ -543,14 +579,13 @@ void fernbedienung(void) {
           status(F("Noch 2 mal druecken"));
           bestaetigung++;
           break;
-          
         }
         if(bestaetigung == 1){
           status(F("Noch 1 mal druecken"));
           bestaetigung++;
           break;          
         }
-        if(bestaetigung == 2){
+        if(bestaetigung == 2){                                                    //Einlesen des IR Sensors und speichern auf der SD, soblat senden 3 mal gedrückt worden ist
             status(F(" "));
             status(F("Scanne..."));
             bestaetigung = 0;
@@ -597,39 +632,39 @@ void fernbedienung(void) {
             Serial.println(" ");
 
 
-            sdschreiben(&sStoredIRData);
-
-        }
+            sdschreiben(&sStoredIRData);                                                              //Dasten auf der SD speichern
+          }
           delay(200);
           
         }else{
           bestaetigung = 0;
         }
 
-        if (b == 0) {
+        if (b == 0) {                                             //senden wurde gedrückt
+          //würde vermuten hier stimmt wa nicht so ganz
           b = 22;
           status(F("Sende..."));
           IrReceiver.stop();
           
 
-        if(adresse == 0){
-          adresse = 1;
-          sdlesen();
-        }
-        zuordnen(&sStoredIRData);
-        Serial.println(F("Sende..."));
-        digitalWrite(STATUS_PIN, HIGH);
-        zuordnen(&sStoredIRData);
-        digitalWrite(STATUS_PIN, LOW);
-        status(F("           "));
-        rfSignal = false;
+          if(adresse == 0){
+            adresse = 1;
+            sdlesen();
+          }
+          zuordnen(&sStoredIRData);
+          Serial.println(F("Sende..."));
+          digitalWrite(STATUS_PIN, HIGH);
+          zuordnen(&sStoredIRData);
+          digitalWrite(STATUS_PIN, LOW);
+          status(F("           "));
+          rfSignal = false;
         }else{
-        delay(100);                                                           //wichtig
+          delay(100);                                                           //wichtig
         }
-    }
+      }
     btAlsInt = 20;
+    }
   }
-}
 }
 
 void scannen(){
@@ -1072,8 +1107,9 @@ schleifebeenden = false;
 
 
 void menu(){
+  Serial.println("Hauptmenue gestartet!");
   
-  Elegoo_TFTLCD tft = initScreen();       //Bildschirm wird instanziiert
+  ;Elegoo_TFTLCD tft = initScreen();       //Bildschirm wird instanziiert
 
   boolean imMenue = true;       //wird false, sobald aus dem Menue ausgestiegen ist
   bool displaySperre = false;
@@ -1121,7 +1157,7 @@ void menu(){
         if(displaySperre == true){      //KA warum oder wofür
           displaySperre = false;
           delay(10000);
-          menu();
+          menu();                                 //Hauptmenue wird neugestartet
         }
 
         //Was bei welchem Knopf ausgeführt werden soll
@@ -1136,7 +1172,7 @@ void menu(){
             break;
           case 1:
 
-            displaySperre = true;
+            displaySperre = true;                               //sorgt dafür, dass in der nächsten iteration der schleife das menue neugestartet wird
             break;
           case 2:
             
