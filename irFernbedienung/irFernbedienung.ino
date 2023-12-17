@@ -230,6 +230,7 @@ void setup(void) {
 
 
 
+
 //irgendwas mit IR 
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(2000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
@@ -271,7 +272,8 @@ void setup(void) {
   //Hier wieder reinmachen, sonst wird gar nichts mehr gehen!!!
   //websiteauslesen();
   delay(100);
-  menu();
+  // menu();
+  fernbedienung();
 }
 
 void drawbuttons(){
@@ -304,7 +306,6 @@ void drawbuttons(){
 //Wo ist der Unterschied zwischen denMethoden?
                                                                                                   //statusbar ausgabe
 void status(const __FlashStringHelper *msg) {
-  Serial.println("FlachStringHelper methode");
   Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
@@ -316,7 +317,6 @@ void status(const __FlashStringHelper *msg) {
 
 //diehier wird scheinbar nicht genutzt
 void status(char *msg) {
-  Serial.println("char methode");
   Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
@@ -420,13 +420,14 @@ void websiteauslesen(){
 
 //nach dem ausführen verschwinden alle knöpfe, außer der zuletzt gedrückte!!
 void fernbedienung(void) {
+
+
   Elegoo_TFTLCD tft = initScreen();
   bool einmalbuttonsmalen = true;
   Serial.println("in Methode fernbedienung");
-  tft.fillScreen(YELLOW);
+  // tft.fillScreen(YELLOW);
+  drawbuttons();
   while(true){
-    // Serial.println("äußere while schleife ausgeführt");     //Funktioniert einwandfrei auf bei senden und scannen knopf
-
 
     if(Serial1.available() > 0){                      //Bytes im Serial read buffer
       int q = Serial1.read();
@@ -458,10 +459,10 @@ void fernbedienung(void) {
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
-  if(einmalbuttonsmalen){       //malt die Knöpfe einmal, sobalt die Methode aufgerufen wurde
-    einmalbuttonsmalen = false;
-    drawbuttons();
-  }
+  // if(einmalbuttonsmalen){       //malt die Knöpfe einmal, sobalt die Methode aufgerufen wurde  //wurde gleich zu anfang aufgerufen
+  //   einmalbuttonsmalen = false;
+  //   drawbuttons();
+  // }
 
    if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {        //speicehert die Koordinaten einer Berührung mit dem display
     p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
@@ -483,14 +484,14 @@ void fernbedienung(void) {
       buttons[b].drawButton();
     }
 
-    //oder shcient irreleveant, da btAlsIns immer == 20 ist!!
+    //oder scheint irreleveant, da btAlsIns immer == 20 ist!!
     if (buttons[b].justPressed() || (btAlsInt > 2 & btAlsInt < 20)) {         //prüft, ob und welcher knopf gedrückt wurde
       Serial.println("In if Block");
         buttons[b].drawButton(true);                                          //Invertiert die Farben des Knopfes zum Erkennen
         
         Serial.print("btAlsInt: ");
         Serial.println(btAlsInt);
-
+        //oder kann nicht eintreffen
         if((b > 2 & b < 15) || (btAlsInt > 2 & btAlsInt < 19)){               //Überprüft, ob der gedrückte Knopf ein Zahlenknopf ist
 
           //Kann eigenmtlich nicht eintreffen, da btAlsInt immer == 20 ist
@@ -498,39 +499,7 @@ void fernbedienung(void) {
             b = btAlsInt;
           }
 
-        /*
-          Serial.print("b: ");
-          Serial.println(b);
-          Serial.print("b- 3: ");
-          Serial.println(b-3);
-          */
-
-
-          textfield = fernbedienungen[b - 3];
-          welcherbutton = b - 1;
-          welcherbuttonalt = welcherbutton;
-          adresse = 0;  
-
-          //kann wieder nicht eintrefen
-          if(btAlsInt > 2 & btAlsInt < 15){
-            b = 0;
-          }
-        }else{                                                            //Senden oder Scannen wurde gedrückt
-
-
-        //Hier muss was rein, damit die Knöpfe nicht verschwinden
-
-
-          //textfield = " ";
-        }
-
-        Serial.println("hallo");
-        Serial.println(F("hallo"));
-
-
-
-
-
+        //bringt den Bildschirm auch zum Absturz
         if(b == 8){                                                     //wenn knopf mit text "6" gedrückt
           Serial.println("richtiger knopf");
           if(bestaetigung1 == 0){
@@ -559,80 +528,108 @@ void fernbedienung(void) {
           bestaetigung1 = 0;
         }
 
+        /*
+          Serial.print("b: ");
+          Serial.println(b);
+          Serial.print("b- 3: ");
+          Serial.println(b-3);
+          */
 
-        Serial.print("textfeld:");                                //printet den Inhalt des Buttons auf dem Display in eine Zeile
-        Serial.println(textfield);
-        tft.setCursor(TEXT_X + 2, TEXT_Y+10);
-        tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
-        tft.setTextSize(TEXT_TSIZE);
-        tft.print("        ");        
-        tft.setCursor(TEXT_X + 2, TEXT_Y+10);
-        tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
-        tft.setTextSize(TEXT_TSIZE);
-        tft.print(textfield);
 
-        Serial.print("welcherbuttonalt: ");
-        Serial.println(welcherbuttonalt);
+          textfield = fernbedienungen[b - 3];
+          welcherbutton = b - 1;
+          welcherbuttonalt = welcherbutton;
+          adresse = 0;  
 
-        if (b == 1) {
-          if(bestaetigung == 0){
-          status(F("Noch 2 mal druecken"));
-          bestaetigung++;
-          break;
+          //kann wieder nicht eintrefen
+          if(btAlsInt > 2 & btAlsInt < 15){
+            b = 0;
+          }
+        }else{                                                            //Senden oder Scannen wurde gedrückt
+          Serial.println("Senden oder Scannen");
+
+
+          //Hier muss was rein, damit die Knöpfe nicht verschwinden
+
+
+            //textfield = " ";
         }
-        if(bestaetigung == 1){
-          status(F("Noch 1 mal druecken"));
-          bestaetigung++;
-          break;          
-        }
-        if(bestaetigung == 2){                                                    //Einlesen des IR Sensors und speichern auf der SD, soblat senden 3 mal gedrückt worden ist
-            status(F(" "));
-            status(F("Scanne..."));
-            bestaetigung = 0;
-                    
-            IrReceiver.start();
-            scannen();
-            //sStoredIRData.receivedIRData.flags = IRDATA_FLAGS_IS_REPEAT;
-       
-            
-            speicher1 = sStoredIRData.receivedIRData.decodedRawData;
-            speicher3[0] = sStoredIRData.receivedIRData.decodedRawDataArray[0];
-            speicher3[1] = sStoredIRData.receivedIRData.decodedRawDataArray[1];
-            speicher4 = sStoredIRData.receivedIRData.address;
-            speicher5 = sStoredIRData.receivedIRData.command;
-            speicher6 = sStoredIRData.receivedIRData.extra;
-            speicher7 = sStoredIRData.receivedIRData.flags;
-            speicher8 = sStoredIRData.receivedIRData.numberOfBits;
-            speicher9 = sStoredIRData.receivedIRData.protocol;
 
-            if(rfSignal == true){
-              rfSpeicher1 = value;
-              rfSpeicher2 = rfModul.getReceivedBitlength();
-              rfSpeicher3 = rfModul.getReceivedProtocol();
+          Serial.println("Wie oft passsiert das hier?");
+
+          Serial.print("textfeld:");                                //printet den Inhalt des gedrücketen Buttons auf dem Display in eine Zeile
+          Serial.println(textfield);
+          tft.setCursor(TEXT_X + 2, TEXT_Y+10);
+          tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
+          tft.setTextSize(TEXT_TSIZE);
+          tft.print("        ");        
+          tft.setCursor(TEXT_X + 2, TEXT_Y+10);
+          tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
+          tft.setTextSize(TEXT_TSIZE);
+          tft.print(textfield);
+
+          Serial.print("welcherbuttonalt: ");
+          Serial.println(welcherbuttonalt);
+
+          if (b == 1) {
+            if(bestaetigung == 0){
+            status(F("Noch 2 mal druecken"));
+            bestaetigung++;
+            break;
+          }
+          if(bestaetigung == 1){
+            status(F("Noch 1 mal druecken"));
+            bestaetigung++;
+            break;          
+          }
+          if(bestaetigung == 2){                                                    //Einlesen des IR Sensors und speichern auf der SD, soblat senden 3 mal gedrückt worden ist
+              status(F(" "));
+              status(F("Scanne..."));
+              bestaetigung = 0;
+                      
+              IrReceiver.start();
+              scannen();
+              //sStoredIRData.receivedIRData.flags = IRDATA_FLAGS_IS_REPEAT;
+        
               
-            }
+              speicher1 = sStoredIRData.receivedIRData.decodedRawData;
+              speicher3[0] = sStoredIRData.receivedIRData.decodedRawDataArray[0];
+              speicher3[1] = sStoredIRData.receivedIRData.decodedRawDataArray[1];
+              speicher4 = sStoredIRData.receivedIRData.address;
+              speicher5 = sStoredIRData.receivedIRData.command;
+              speicher6 = sStoredIRData.receivedIRData.extra;
+              speicher7 = sStoredIRData.receivedIRData.flags;
+              speicher8 = sStoredIRData.receivedIRData.numberOfBits;
+              speicher9 = sStoredIRData.receivedIRData.protocol;
 
-            Serial.println(" ");
-            Serial.println(" ");
-            Serial.println(" ");
-            Serial.println("    VOR dem Speichern --> Werte der Speicherdaten(1 & 3-9) :");
-            Serial.println(" ");
-            Serial.println(sStoredIRData.receivedIRData.decodedRawData);
-            //Serial.println(speicher2);
-            Serial.println(speicher3[0]);
-            Serial.println(speicher3[1]);
-            Serial.println(speicher4);
-            Serial.println(speicher5);
-            Serial.println(speicher6);
-            Serial.println(speicher7);
-            Serial.println(speicher8);
-            Serial.println(speicher9);
-            Serial.println(" ");
-            Serial.println(" ");
-            Serial.println(" ");
+              if(rfSignal == true){
+                rfSpeicher1 = value;
+                rfSpeicher2 = rfModul.getReceivedBitlength();
+                rfSpeicher3 = rfModul.getReceivedProtocol();
+                
+              }
+
+              Serial.println(" ");
+              Serial.println(" ");
+              Serial.println(" ");
+              Serial.println("    VOR dem Speichern --> Werte der Speicherdaten(1 & 3-9) :");
+              Serial.println(" ");
+              Serial.println(sStoredIRData.receivedIRData.decodedRawData);
+              //Serial.println(speicher2);
+              Serial.println(speicher3[0]);
+              Serial.println(speicher3[1]);
+              Serial.println(speicher4);
+              Serial.println(speicher5);
+              Serial.println(speicher6);
+              Serial.println(speicher7);
+              Serial.println(speicher8);
+              Serial.println(speicher9);
+              Serial.println(" ");
+              Serial.println(" ");
+              Serial.println(" ");
 
 
-            sdschreiben(&sStoredIRData);                                                              //Dasten auf der SD speichern
+              sdschreiben(&sStoredIRData);                                                              //Daten auf der SD speichern
           }
           delay(200);
           
@@ -640,7 +637,11 @@ void fernbedienung(void) {
           bestaetigung = 0;
         }
 
-        if (b == 0) {                                             //senden wurde gedrückt
+        //wenn diueses if nicht eintrifft, stürtzt der Bildschirm beim drücken von SEnden nicht ab
+        if (b == 0 && false) {                                             //senden wurde gedrückt
+
+
+          Serial.println("Senden wurde gedrückt");
           //würde vermuten hier stimmt wa nicht so ganz
           b = 22;
           status(F("Sende..."));
@@ -651,6 +652,7 @@ void fernbedienung(void) {
             adresse = 1;
             sdlesen();
           }
+          //einmalbuttonsmalen = true;                          //lässt die Knöpfe nach jeder senden/ Scannen aktion neulasden, funtioniert zwar, ist aber äußerst unschön
           zuordnen(&sStoredIRData);
           Serial.println(F("Sende..."));
           digitalWrite(STATUS_PIN, HIGH);
