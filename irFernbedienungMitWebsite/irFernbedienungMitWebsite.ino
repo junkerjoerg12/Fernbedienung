@@ -290,7 +290,7 @@ void setup(void) {
   
                                                                                                     //buttons erstellen
       
-      for (uint8_t col=0; col<2; col++) {                                                           //1.reihe
+    for (uint8_t col=0; col<2; col++) {                                                           //1.reihe
       buttons[col + 0*3].initButton(&tft, BUTTON_X1+col*(BUTTON_W1+BUTTON_SPACING_X1), 
                  BUTTON_Y1+0*(BUTTON_H1+BUTTON_SPACING_Y1),    
                   BUTTON_W1, BUTTON_H1, ILI9341_WHITE, buttoncolors[col+0*3], ILI9341_WHITE,

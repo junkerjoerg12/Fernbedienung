@@ -6,7 +6,6 @@
 #include <IRremote.hpp>
 #include <SPI.h>
 #include <SD.h>
-
 #include <RCSwitch.h>
 
 #define BUFFPIXEL 150
@@ -86,6 +85,8 @@ void zuordnen(storedIRDataStruct *aIRDataToSend);
 
 #define LCD_RESET A4
 
+
+//Farben
 #define	BLACK   0x0000
 #define	BLUE    0x001F
 #define	RED     0xF800
@@ -94,7 +95,6 @@ void zuordnen(storedIRDataStruct *aIRDataToSend);
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
-
 
 #define ILI9341_BLACK       0x0000      /*   0,   0,   0 */
 #define ILI9341_NAVY        0x000F      /*   0,   0, 128 */
@@ -128,7 +128,8 @@ void zuordnen(storedIRDataStruct *aIRDataToSend);
 
 #define textsizeMenu 3
 
-#define BUTTON_X1 65           //buttons reihe 1
+//buttons reihe 1
+#define BUTTON_X1 65           
 #define BUTTON_Y1 100
 #define BUTTON_W1 108
 #define BUTTON_H1 30
@@ -163,12 +164,16 @@ String textfield = "";
 #define STATUS_X 10
 #define STATUS_Y 65
 
+//Werte für den Druck, der auf das Display ausgeübt wird
+#define MINPRESSURE 100                           //10
+#define MAXPRESSURE 1000                          //1000
+
 
 
 //Elegoo_TFTLCD tft;//(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 
-
+//Bezeichnung der Knöpfe zum Funtionen auswählen
 String fernbedienungen[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
 
 int decodertypnummer = 0;
@@ -181,10 +186,10 @@ bool remoteweiter;
 int welcherbutton = 0;
 int welcherbuttonalt = 0;
 char bluetoothwert = 0;
-int btalsint = 25;
+int btAlsInt = 25;
 int anzahlbilder = 0;
 int value = 0;
-bool einmalbuttonsmalen = true;
+
 
 Elegoo_GFX_Button buttons[15];
 Elegoo_GFX_Button buttonMenu[6];
@@ -220,9 +225,13 @@ void setup(void) {
 
   Serial.println("Starte neu, aufgrund des seriellen Monitores");
 
+  //Der Bildschirm wird instanziiert
   Elegoo_TFTLCD tft = initScreen();
 
 
+
+
+//irgendwas mit IR 
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
     delay(2000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
@@ -251,7 +260,7 @@ void setup(void) {
 
 
   delay(100);
-  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);                //wurde eigentlich schon mal
   printActiveIRProtocols(&Serial);
 
 
@@ -260,13 +269,15 @@ void setup(void) {
   delay(100);
   namenauslesen();
   delay(100);
-  //Hier wieder reinmachen, sonst wird gar nichts mehr gehen
+  //Hier wieder reinmachen, sonst wird gar nichts mehr gehen!!!
   //websiteauslesen();
   delay(100);
-  menu();
+  // menu();
+  fernbedienung();
 }
 
 void drawbuttons(){
+  //Bildschirm wird instanziiert
   Elegoo_TFTLCD tft = initScreen();
                                                                                                     //buttons erstellen
       
@@ -291,9 +302,11 @@ void drawbuttons(){
 
 }
 
+
+//Wo ist der Unterschied zwischen denMethoden?
                                                                                                   //statusbar ausgabe
 void status(const __FlashStringHelper *msg) {
-    Elegoo_TFTLCD tft = initScreen();
+  Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
   tft.setCursor(STATUS_X, STATUS_Y);
   tft.setTextColor(ILI9341_WHITE);
@@ -301,6 +314,8 @@ void status(const __FlashStringHelper *msg) {
   tft.print(msg);
 }
 
+
+//diehier wird scheinbar nicht genutzt
 void status(char *msg) {
   Elegoo_TFTLCD tft = initScreen();
   tft.fillRect(STATUS_X, STATUS_Y, 240, 8, ILI9341_BLACK);
@@ -311,8 +326,7 @@ void status(char *msg) {
   
 }
 
-#define MINPRESSURE 100                           //10
-#define MAXPRESSURE 1000                          //1000
+
 
 
 void buttonsauslesen(){
@@ -403,22 +417,27 @@ void websiteauslesen(){
   Serial.println(" ");
 }
 
-void loop(){}
 
+//nach dem ausführen verschwinden alle knöpfe, außer der zuletzt gedrückte!!
 void fernbedienung(void) {
-  Elegoo_TFTLCD tft = initScreen();
-  Serial.println("in Methode fernbedienung");
-  tft.fillScreen(YELLOW);
-while(true){
 
-  if(Serial1.available() > 0){
-    int q = Serial1.read();
-    if(q > 2 & q < 20){
-      Serial.print("Esp-Knopf: ");
+
+  Elegoo_TFTLCD tft = initScreen();
+  bool einmalbuttonsmalen = true;
+  Serial.println("in Methode fernbedienung");
+  // tft.fillScreen(YELLOW);
+  drawbuttons();
+  while(true){
+
+    if(Serial1.available() > 0){                      //Bytes im Serial read buffer
+      int q = Serial1.read();
       Serial.println(q);
-      btalsint = q;
+      if(q > 2 & q < 20){
+        Serial.print("Esp-Knopf: ");
+        Serial.println(q);
+        btAlsInt = q;
+      }
     }
-  }
   
 
 
@@ -426,13 +445,13 @@ while(true){
   if(Serial1.available() > 0){
     bluetoothwert = Serial1.read();
     if(bluetoothwert != '30'){
-      btalsint = ((int) bluetoothwert) - 46;
+      btAlsInt = ((int) bluetoothwert) - 46;
       bluetoothwert = '21';
     }
   }
 */
 
-  digitalWrite(13, HIGH);
+  digitalWrite(13, HIGH);           
   TSPoint p = ts.getPoint();
   digitalWrite(13, LOW);
           
@@ -440,21 +459,19 @@ while(true){
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
-  if(einmalbuttonsmalen == true){
-    einmalbuttonsmalen = false;
-    drawbuttons();
-  }
+  // if(einmalbuttonsmalen){       //malt die Knöpfe einmal, sobalt die Methode aufgerufen wurde  //wurde gleich zu anfang aufgerufen
+  //   einmalbuttonsmalen = false;
+  //   drawbuttons();
+  // }
 
-   if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
-  
+   if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {        //speicehert die Koordinaten einer Berührung mit dem display
     p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
     p.y = (tft.height()-map(p.y, TS_MINY, TS_MAXY, tft.height(), 0));
    }
    
  
-  for (uint8_t b=0; b<15; b++) {
+  for (uint8_t b=0; b<15; b++) {            //setzt pressen des breührten buttons auf true und alle anderen auf false
     if (buttons[b].contains(p.x, p.y)) {
-      
       buttons[b].press(true);  
     } else {
       buttons[b].press(false);
@@ -464,44 +481,36 @@ while(true){
   
   for (uint8_t b=0; b<15; b++) {
     if (buttons[b].justReleased()) {
-    
       buttons[b].drawButton();
     }
-    
-    if (buttons[b].justPressed() | (btalsint > 2 & btalsint < 20)) {
-        buttons[b].drawButton(true);  
+
+    //oder scheint irreleveant, da btAlsIns immer == 20 ist!!
+    if (buttons[b].justPressed() || (btAlsInt > 2 & btAlsInt < 20)) {         //prüft, ob und welcher knopf gedrückt wurde
+      Serial.println("In if Block");
+        buttons[b].drawButton(true);                                          //Invertiert die Farben des Knopfes zum Erkennen
         
-        Serial.println(btalsint);
+        Serial.print("btAlsInt: ");
+        Serial.println(btAlsInt);
+        //oder kann nicht eintreffen
+        if((b > 2 & b < 15) || (btAlsInt > 2 & btAlsInt < 19)){               //Überprüft, ob der gedrückte Knopf ein Zahlenknopf ist
 
-        if((b > 2 & b < 15) | (btalsint > 2 & btalsint < 19)){
-          if(btalsint > 2 & btalsint < 15){
-            b = btalsint;
+          //Kann eigenmtlich nicht eintreffen, da btAlsInt immer == 20 ist
+          if(btAlsInt > 2 && btAlsInt < 15){
+            b = btAlsInt;
           }
-          textfield = fernbedienungen[b - 3];
-          welcherbutton = b - 1;
-          welcherbuttonalt = welcherbutton;
-          adresse = 0;
-          if(btalsint > 2 & btalsint < 15){
-            b = 0;
-          }
-        }else{
-          //textfield = " ";
-        }
 
-
-
-        if(b == 8){
+        //bringt den Bildschirm auch zum Absturz
+        if(b == 8){                                                     //wenn knopf mit text "6" gedrückt
+          Serial.println("richtiger knopf");
           if(bestaetigung1 == 0){
             status(F("Noch 2 mal druecken zum Loeschen"));
             bestaetigung1++;
             break;
-          }
-          if(bestaetigung1 == 1){
+          }else if(bestaetigung1 == 1){
             status(F("Noch 1 mal druecken zum Loeschen"));
             bestaetigung1++;
             break;          
-          }
-          if(bestaetigung1 == 2){
+          }else if(bestaetigung1 == 2){
             status(F(" "));
             status(F("Dateien geloescht"));
             bestaetigung1 = 0;
@@ -513,86 +522,114 @@ while(true){
             for(int b = 0; b < 12; b++){
               SD.remove((fernbedienungen[b] + ".txt"));
             }
-            menu();
+            menu();                                                   //Zurück ins Hauptmenue
           }
         }else{
           bestaetigung1 = 0;
         }
-        
-        Serial.println(textfield);
-        tft.setCursor(TEXT_X + 2, TEXT_Y+10);
-        tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
-        tft.setTextSize(TEXT_TSIZE);
-        tft.print("        ");        
-        tft.setCursor(TEXT_X + 2, TEXT_Y+10);
-        tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
-        tft.setTextSize(TEXT_TSIZE);
-        tft.print(textfield);
 
-        Serial.print("welcherbuttonalt: ");
-        Serial.println(welcherbuttonalt);
+        /*
+          Serial.print("b: ");
+          Serial.println(b);
+          Serial.print("b- 3: ");
+          Serial.println(b-3);
+          */
 
-        if (b == 1) {
-          if(bestaetigung == 0){
-          status(F("Noch 2 mal druecken"));
-          bestaetigung++;
-          break;
-          
+
+          textfield = fernbedienungen[b - 3];
+          welcherbutton = b - 1;
+          welcherbuttonalt = welcherbutton;
+          adresse = 0;  
+
+          //kann wieder nicht eintrefen
+          if(btAlsInt > 2 & btAlsInt < 15){
+            b = 0;
+          }
+        }else{                                                            //Senden oder Scannen wurde gedrückt
+          Serial.println("Senden oder Scannen");
+
+
+          //Hier muss was rein, damit die Knöpfe nicht verschwinden
+
+
+            //textfield = " ";
+        }
+
+          Serial.println("Wie oft passsiert das hier?");
+
+          Serial.print("textfeld:");                                //printet den Inhalt des gedrücketen Buttons auf dem Display in eine Zeile
+          Serial.println(textfield);
+          tft.setCursor(TEXT_X + 2, TEXT_Y+10);
+          tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
+          tft.setTextSize(TEXT_TSIZE);
+          tft.print("        ");        
+          tft.setCursor(TEXT_X + 2, TEXT_Y+10);
+          tft.setTextColor(TEXT_TCOLOR, ILI9341_BLACK);
+          tft.setTextSize(TEXT_TSIZE);
+          tft.print(textfield);
+
+          Serial.print("welcherbuttonalt: ");
+          Serial.println(welcherbuttonalt);
+
+          if (b == 1) {
+            if(bestaetigung == 0){
+            status(F("Noch 2 mal druecken"));
+            bestaetigung++;
+            break;
           }
           if(bestaetigung == 1){
-          status(F("Noch 1 mal druecken"));
-          bestaetigung++;
-          break;          
+            status(F("Noch 1 mal druecken"));
+            bestaetigung++;
+            break;          
           }
-          if(bestaetigung == 2){
-            status(F(" "));
-            status(F("Scanne..."));
-            bestaetigung = 0;
-                    
-            IrReceiver.start();
-            scannen();
-            //sStoredIRData.receivedIRData.flags = IRDATA_FLAGS_IS_REPEAT;
-       
-            
-            speicher1 = sStoredIRData.receivedIRData.decodedRawData;
-            speicher3[0] = sStoredIRData.receivedIRData.decodedRawDataArray[0];
-            speicher3[1] = sStoredIRData.receivedIRData.decodedRawDataArray[1];
-            speicher4 = sStoredIRData.receivedIRData.address;
-            speicher5 = sStoredIRData.receivedIRData.command;
-            speicher6 = sStoredIRData.receivedIRData.extra;
-            speicher7 = sStoredIRData.receivedIRData.flags;
-            speicher8 = sStoredIRData.receivedIRData.numberOfBits;
-            speicher9 = sStoredIRData.receivedIRData.protocol;
-
-            if(rfSignal == true){
-              rfSpeicher1 = value;
-              rfSpeicher2 = rfModul.getReceivedBitlength();
-              rfSpeicher3 = rfModul.getReceivedProtocol();
+          if(bestaetigung == 2){                                                    //Einlesen des IR Sensors und speichern auf der SD, soblat senden 3 mal gedrückt worden ist
+              status(F(" "));
+              status(F("Scanne..."));
+              bestaetigung = 0;
+                      
+              IrReceiver.start();
+              scannen();
+              //sStoredIRData.receivedIRData.flags = IRDATA_FLAGS_IS_REPEAT;
+        
               
-            }
+              speicher1 = sStoredIRData.receivedIRData.decodedRawData;
+              speicher3[0] = sStoredIRData.receivedIRData.decodedRawDataArray[0];
+              speicher3[1] = sStoredIRData.receivedIRData.decodedRawDataArray[1];
+              speicher4 = sStoredIRData.receivedIRData.address;
+              speicher5 = sStoredIRData.receivedIRData.command;
+              speicher6 = sStoredIRData.receivedIRData.extra;
+              speicher7 = sStoredIRData.receivedIRData.flags;
+              speicher8 = sStoredIRData.receivedIRData.numberOfBits;
+              speicher9 = sStoredIRData.receivedIRData.protocol;
 
-            Serial.println(" ");
-            Serial.println(" ");
-            Serial.println(" ");
-            Serial.println("    VOR dem Speichern --> Werte der Speicherdaten(1 & 3-9) :");
-            Serial.println(" ");
-            Serial.println(sStoredIRData.receivedIRData.decodedRawData);
-            //Serial.println(speicher2);
-            Serial.println(speicher3[0]);
-            Serial.println(speicher3[1]);
-            Serial.println(speicher4);
-            Serial.println(speicher5);
-            Serial.println(speicher6);
-            Serial.println(speicher7);
-            Serial.println(speicher8);
-            Serial.println(speicher9);
-            Serial.println(" ");
-            Serial.println(" ");
-            Serial.println(" ");
+              if(rfSignal == true){
+                rfSpeicher1 = value;
+                rfSpeicher2 = rfModul.getReceivedBitlength();
+                rfSpeicher3 = rfModul.getReceivedProtocol();
+                
+              }
+
+              Serial.println(" ");
+              Serial.println(" ");
+              Serial.println(" ");
+              Serial.println("    VOR dem Speichern --> Werte der Speicherdaten(1 & 3-9) :");
+              Serial.println(" ");
+              Serial.println(sStoredIRData.receivedIRData.decodedRawData);
+              //Serial.println(speicher2);
+              Serial.println(speicher3[0]);
+              Serial.println(speicher3[1]);
+              Serial.println(speicher4);
+              Serial.println(speicher5);
+              Serial.println(speicher6);
+              Serial.println(speicher7);
+              Serial.println(speicher8);
+              Serial.println(speicher9);
+              Serial.println(" ");
+              Serial.println(" ");
+              Serial.println(" ");
 
 
-            sdschreiben(&sStoredIRData);
-
+              sdschreiben(&sStoredIRData);                                                              //Daten auf der SD speichern
           }
           delay(200);
           
@@ -600,30 +637,36 @@ while(true){
           bestaetigung = 0;
         }
 
-        if (b == 0) {
+        //wenn diueses if nicht eintrifft, stürtzt der Bildschirm beim drücken von SEnden nicht ab
+        if (b == 0 && false) {                                             //senden wurde gedrückt
+
+
+          Serial.println("Senden wurde gedrückt");
+          //würde vermuten hier stimmt wa nicht so ganz
           b = 22;
           status(F("Sende..."));
           IrReceiver.stop();
           
 
-        if(adresse == 0){
-          adresse = 1;
-          sdlesen();
-        }
-        zuordnen(&sStoredIRData);
-        Serial.println(F("Sende..."));
-        digitalWrite(STATUS_PIN, HIGH);
-        zuordnen(&sStoredIRData);
-        digitalWrite(STATUS_PIN, LOW);
-        status(F("           "));
-        rfSignal = false;
+          if(adresse == 0){
+            adresse = 1;
+            sdlesen();
+          }
+          //einmalbuttonsmalen = true;                          //lässt die Knöpfe nach jeder senden/ Scannen aktion neulasden, funtioniert zwar, ist aber äußerst unschön
+          zuordnen(&sStoredIRData);
+          Serial.println(F("Sende..."));
+          digitalWrite(STATUS_PIN, HIGH);
+          zuordnen(&sStoredIRData);
+          digitalWrite(STATUS_PIN, LOW);
+          status(F("           "));
+          rfSignal = false;
         }else{
-        delay(100);                                                           //wichtig
+          delay(100);                                                           //wichtig
         }
+      }
+    btAlsInt = 20;
     }
-    btalsint = 20;
   }
-}
 }
 
 void scannen(){
@@ -1066,19 +1109,24 @@ schleifebeenden = false;
 
 
 void menu(){
-  Elegoo_TFTLCD tft = initScreen();
-  boolean imMenue = true;
-  Serial.println("In Funktion \"menu\"");
-  tft.fillScreen(RED);
-  delay(600);
+  Serial.println("Hauptmenue gestartet!");
+  
+  ;Elegoo_TFTLCD tft = initScreen();       //Bildschirm wird instanziiert
+
+  boolean imMenue = true;       //wird false, sobald aus dem Menue ausgestiegen ist
   bool displaySperre = false;
   int zusatzabstand = 0;
+
+  tft.fillScreen(RED);
+
+  //definiert die Knöpfe 
   for(int i = 0; i < 6; i++){
     buttonMenu[i].initButton(&tft, 121, ((i * 40) + 40 + zusatzabstand + 40), 231, 35, ILI9341_WHITE, ILI9341_YELLOW, ILI9341_RED, buttonMenuLables[i], textsizeMenu);
     //buttonMenu[i].initButton(&tft, 121, ((i * 40) + 40 + zusatzabstand + 40), 240, 35, ILI9341_WHITE, ILI9341_YELLOW, ILI9341_RED, buttonMenuLables[i], textsizeMenu);
-    buttonMenu[i].drawButton();
+    buttonMenu[i].drawButton();       //Zeichent die Knöpfe auf dem Bildschirm
     
   }
+
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
 
@@ -1088,67 +1136,60 @@ void menu(){
     TSPoint p = ts.getPoint();
     digitalWrite(13, LOW);          //was genau macht das?
 
-    //Sollte überprüfen, ob das Display berührt wurde und die Koordinaten unter p.x und p.y speichern scheint irgendwie in unregelmäßigen abständen true z
+    //Überprüft, ob das Display berührt wurde und speichert die Koordinaten der Berührung unter p.x und p.y 
     if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
         p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
         p.y = (tft.height()-map(p.y, TS_MINY, TS_MAXY, tft.height(), 0));
       }
 
+    //Die nächsten zwei fors könnten zu einer gemacht wedrden 
     for (uint8_t b=0; b<6; b++) {
-      if (buttonMenu[b].contains(p.x, p.y)) {
+      if (buttonMenu[b].contains(p.x, p.y)) {   //Überprüft, die Berührung auf einem der knöfpe passiert ist
         buttonMenu[b].press(true);  
       }else{
         buttonMenu[b].press(false);
       }
+
     }
     for(int b = 0; b < 6; b++){
-      if(buttonMenu[b].justPressed()){
+      if(buttonMenu[b].isPressed()){      //wenn ein knopf gedrückt wurde, wird der entscprechende Code ausgeführt
         Serial.print("Button: ");
         buttonMenu[b].press(false);
         Serial.println(b);
-        if(displaySperre == true){
+        if(displaySperre == true){      //KA warum oder wofür
           displaySperre = false;
           delay(10000);
-          menu();
+          menu();                                 //Hauptmenue wird neugestartet
         }
+
+        //Was bei welchem Knopf ausgeführt werden soll
         switch(b){
-          case 0:
-          Serial.println("switch(b), case 0 eingetroffen");
-            delay(500);
+          case 0:                                               //ins andere("Fernbedienung") Menue
+            imMenue = false;
             
             Serial.println(tft.width());
             Serial.println(tft.height());
-            delay(600);
-
-            imMenue = false;
 
             fernbedienung();
             break;
           case 1:
 
-          //irgendwie wird dashier auch ausgeführt aber nur manchmal
-          Serial.println("Das wäre jetzt komisch, weil fall 1 auch eingetreten ist");
-
-          // Das könnte ggf. wieder rein, wenn die Methode funnktioniert
-            // tftreset();
-            displaySperre = true;
+            displaySperre = true;                               //sorgt dafür, dass in der nächsten iteration der schleife das menue neugestartet wird
             break;
           case 2:
-                    Serial.println("Das wäre jetzt komisch, weil fall 2 auch eingetreten ist");
             
             break;
           case 3:
-                    Serial.println("Das wäre jetzt komisch, weil fall 3 auch eingetreten ist");
             
             break;
           case 4:
-                      Serial.println("Das wäre jetzt komisch, weil fall 4 auch eingetreten ist");
+
             break;
           case 5:
-                      Serial.println("Das wäre jetzt komisch, weil fall 5 auch eingetreten ist");
+
             break;
           case 6:
-                      Serial.println("Das wäre jetzt komisch, weil fall 6 auch eingetreten ist");
+
             break;
         }
       }
@@ -1179,3 +1220,7 @@ Elegoo_TFTLCD initScreen(){
 
   return tft;
 }
+
+
+//wird nicht gebraucht
+void loop(){}
