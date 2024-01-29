@@ -2,6 +2,7 @@ package main;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,15 +10,22 @@ import java.io.IOException;
 public class Main {
   public static void main(String[] args) {
 
+    // liest html, css und js Datein ein und schreibt sie in einen .h datei um, die
+    // von Arduino einfacher gelesen werden kann
+
     String text = "const char webpageCode[] = R\"=====(" + "\n";
     String line = "";
 
     try {
-      BufferedWriter writer = new BufferedWriter(
-          new FileWriter("C:\\Users\\andre\\Documents\\Arduino\\Arduino\\espwebserver\\webpageCode.h"));
+      File file = new File("Website/webpagecode.h");
+
+      if (!file.exists()) {
+        file.createNewFile();
+      }
+      BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 
       BufferedReader reader = new BufferedReader(
-          new FileReader("C:\\Users\\andre\\Documents\\Arduino\\FernbedienungWebsite\\index.html"));
+          new FileReader("Website/index.html"));
       while (!(line = reader.readLine()).contains("</head>")) {
         if (!line.equals("    <link rel=\"stylesheet\" href=\"style.css\" />")) {
 
@@ -28,7 +36,7 @@ public class Main {
       reader.close();
 
       reader = new BufferedReader(
-          new FileReader("C:\\Users\\andre\\Documents\\Arduino\\FernbedienungWebsite\\style.css"));
+          new FileReader("Website/style.css"));
       while ((line = reader.readLine()) != null) {
         text += line + "\n";
       }
@@ -36,12 +44,9 @@ public class Main {
       text += "  </head>" + "\n";
       reader.close();
 
-      // hier kommt irgendwie noch der Head teilm it rein glscube ich, sonst passts
       reader = new BufferedReader(
-          new FileReader("C:\\Users\\andre\\Documents\\Arduino\\FernbedienungWebsite\\index.html"));
-      System.out.println("hier gehts los");
+          new FileReader("Website/index.html"));
       while (!(line = reader.readLine()).contains("</head")) {
-        System.out.println(line);
       }
 
       while (!(line = reader.readLine()).contains("<script")) {
@@ -52,7 +57,7 @@ public class Main {
       reader.close();
 
       reader = new BufferedReader(
-          new FileReader("C:\\Users\\andre\\Documents\\Arduino\\FernbedienungWebsite\\index.js"));
+          new FileReader("Website/index.js"));
 
       while ((line = reader.readLine()) != null) {
         text += line + "\n";

@@ -1,6 +1,7 @@
-.vscode
 test/
 irFernbedienung/.theia/launch.json
+webpageCode.h
+
 
 ##############################
 ## Java
