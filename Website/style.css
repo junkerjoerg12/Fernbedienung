@@ -1,0 +1,80 @@
+#ueberschrift {
+  border-top-style: dotted;
+  border-bottom-style: dotted;
+  text-align: center;
+}
+body {
+  background-color: #2e3030;
+  font-family: sans-serif, "consolas";
+}
+h1 {
+  color: white;
+}
+
+.knopf {
+  width: fit-content;
+  border-style: solid;
+  border-color: black;
+  border-width: 5px;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+#knoepfe {
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px;
+}
+#auswaehlen {
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px;
+}
+
+#umbenennen {
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px;
+}
+#FeldNamen {
+  color: lightgray;
+  margin-bottom: 10px;
+}
+#knopfUmbenennen {
+  border-width: 5px;
+  border-style: solid;
+  border-color: black;
+  background-color: lightgray;
+  border-radius: 7px;
+  padding: 5px;
+}
+#knopfAusfuehren {
+  border-width: 5px;
+  border-style: solid;
+  border-color: black;
+  background-color: lightgrey;
+  border-radius: 7px;
+  padding: 5px;
+}
+#Statusanzeige {
+  color: lightgray;
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px;
+}
+#login {
+  background-color: green;
+  float: right;
+}
